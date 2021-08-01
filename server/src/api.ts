@@ -162,7 +162,6 @@ async function slowCachedPost(endpoint: string, params: string, config: Object):
             params, 
             config
         )
-        console.log('throttle')
         await sleep(API_THROTTLE)
         console.log(response.data)
         return response.data
@@ -220,7 +219,6 @@ async function getCategory(
     )
     const departments: Array<Department> = []
     for (const categoryId in categories) {
-        console.log(categories[categoryId])
         if (categoryId.length === 0) {
             departments.push(...(await getDepartment(typeId, categoryId, '*', acysem, language)))
         }
@@ -295,9 +293,7 @@ async function getDepartment(
             }
         )
         const departments: Array<Department> = []
-        console.log('--- department start ---')
         for (const departmentId in apiDepartments) {
-            console.log(apiDepartments[departmentId])
             const grades = await getGrades(typeId, categoryId, collegeId, departmentId, acysem, language)
             departments.push({
                 name: apiDepartments[departmentId],
@@ -305,7 +301,6 @@ async function getDepartment(
                 grades: grades
             })
         }
-        console.log('--- department end ---')
         return departments
     } catch (error) {}
     return []

@@ -4,7 +4,6 @@ import { queryDepartmentCourses, queryAllDepartments } from './api'
 import { createClient } from 'redis'
 import Department from './departement'
 import { REDIS_ENDPOINT, SERVER_PORT } from './consts'
-import { IpFilter } from 'express-ipfilter'
 
 /**
  * Redis stuff
@@ -40,8 +39,6 @@ app.post('/api/departments', jsonParser, async (req, res) => {
     console.log('/api/departments')
     const acysem = req.body.acysem
     const language = req.body.language
-    console.log(acysem)
-    console.log(language)
     const requestKey = JSON.stringify({
         item: 'departments',
         acysem: acysem,

@@ -6,4 +6,4 @@ export const API_ENDPOINT = 'https://timetable.nycu.edu.tw/?r=main/'
 export const API_THROTTLE = 1200
 
 // REDIS
-export const REDIS_ENDPOINT = process.env.REDIS_ENDPOINT
+export const REDIS_ENDPOINT = process.env.REDIS_ENDPOINT ?? '127.0.0.1'
