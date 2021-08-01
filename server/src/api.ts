@@ -141,9 +141,10 @@ async function queryDepartment(
     }
 }
 
-async function queryTeacher(
+async function queryOthers(
     acysem: string,
-    teacher: string
+    option: string,
+    parameter: string
 ): Promise<{ data: Array<Course> | null, error: any | null }> {
     try {
         const acy = acysem.substr(0, 3)
@@ -158,55 +159,11 @@ async function queryTeacher(
                 m_group:      '**',
                 m_grade:      '**',
                 m_class:      '**',
-                m_option:     'teaname',
-                m_crsname:    '**',
-                m_teaname:    teacher,
-                m_cos_id:     '**',
-                m_cos_code:   '**',
-                m_crstime:    '**',
-                m_crsoutline: '**',
-                m_costype:    '**'
-            }), {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-                }
-            }
-        )
-
-        return {
-            data: parseCourses(response.data),
-            error: null
-        }
-    } catch (error) {
-        return {
-            data: null, 
-            error: error.response.data
-        }
-    }
-}
-
-async function queryId(
-    acysem: string,
-    id: string
-): Promise<{ data: Array<Course> | null, error: any | null }> {
-    try {
-        const acy = acysem.substr(0, 3)
-        const sem = acysem.slice(-1)
-        const response = await axios.post(
-            API_ENDPOINT + 'get_cos_list', encode({
-                m_acy:        acy,
-                m_sem:        sem,
-                m_acyend:     acy,
-                m_semend:     sem,
-                m_dep_uid:    '**',
-                m_group:      '**',
-                m_grade:      '**',
-                m_class:      '**',
-                m_option:     'cos_id',
-                m_crsname:    '**',
-                m_teaname:    '**',
-                m_cos_id:     id,
-                m_cos_code:   '**',
+                m_option:     option,
+                m_crsname:    option === 'crsname'  ? parameter : '**',
+                m_teaname:    option === 'teaname'  ? parameter : '**',
+                m_cos_id:     option === 'cos_id'   ? parameter : '**',
+                m_cos_code:   option === 'cos_code' ? parameter : '**',
                 m_crstime:    '**',
                 m_crsoutline: '**',
                 m_costype:    '**'
@@ -417,4 +374,4 @@ async function getGrades(typeId: string, categoryId: string, collegeId: string, 
     return []
 } 
 
-export { queryDepartment, queryTeacher, queryId, queryAllDepartments, ApiReponse }
+export { queryDepartment, queryOthers, queryAllDepartments, ApiReponse }
