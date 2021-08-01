@@ -4,7 +4,8 @@
   "description": "Faster NYCU Timetable",
   "scripts": {
     "start": "cd server && npm run start",
-    "dev": "(cd server && npm run dev);",
+    "dev": "docker-compose up -d redis && (cd server && REDIS_ENDPOINT=127.0.0.1 npm run dev);",
+    "docker": "docker-compose up -d --build node-server redis",
     "clean": "(cd server && npm run clean);",
     "postinstall": "(cd server && npm i);"
   },

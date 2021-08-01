@@ -4,6 +4,7 @@ import { queryDepartmentCourses, queryAllDepartments } from './api'
 import { createClient } from 'redis'
 import Department from './departement'
 import { REDIS_ENDPOINT, SERVER_PORT } from './consts'
+import { IpFilter } from 'express-ipfilter'
 
 /**
  * Redis stuff
@@ -27,6 +28,10 @@ app.post('/api/acysem', (req, res) => {
         res.send(response)
     })
 })
+
+// app.use(IpFilter(ALLOWED_IPS, { mode: 'allow' })).put('/api/acysem', (req, res) => {
+
+// })
 
 /**
  * Query a list of departments.

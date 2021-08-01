@@ -10,6 +10,8 @@ services:
     tty: true
     ports:
       - "8888:8888"
+    environment: 
+      - REDIS_ENDPOINT=redis
 
   # Redis
   redis:
