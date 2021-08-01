@@ -50,7 +50,7 @@ function parseCourses(data: ApiReponse): Array<Course> {
                     year:             parseInt(apiCourse.acy),
                     semester:         apiCourse.sem === 'X' ? 3 : parseInt(apiCourse.sem),
                     id:               apiCourse.cos_id,
-                    permanentId:      apiCourse.cos_code,
+                    permanentId:      apiCourse.cos_code.trim(),
                     limit:            parseInt(apiCourse.num_limit),
                     link:             apiCourse.URL ?? '',
                     name: { 
@@ -59,11 +59,11 @@ function parseCourses(data: ApiReponse): Array<Course> {
                     },
                     credits:          parseFloat(apiCourse.cos_credit),
                     hours:            parseFloat(apiCourse.cos_hours),
-                    memo:             apiCourse.memo,
+                    memo:             apiCourse.memo ?? '',
                     teacher:          apiCourse.teacher,
                     teacherLink:      apiCourse.TURL,
                     time:             apiCourse.cos_time,
-                    departmentId:     apiCourse.dep_id,
+                    departmentId:     departmentId,
                     registered:       parseInt(apiCourse.reg_num),
                     departmentName: {
                         'zh-tw':      apiCourse.dep_cname,

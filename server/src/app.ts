@@ -1,9 +1,9 @@
 import express from 'express'
 import { json } from 'body-parser'
-import { queryDepartmentCourses, queryAllDepartments } from './api'
+import { queryDepartment, queryTeacher, queryId, queryAllDepartments } from './api'
 import { createClient } from 'redis'
 import Department from './departement'
-import { REDIS_ENDPOINT, SERVER_PORT } from './consts'
+import { REDIS_ENDPOINT, SERVER_PORT, API_CACHE_TIMEOUT } from './consts'
 
 /**
  * Redis stuff
@@ -38,7 +38,14 @@ app.post('/api/acysem', (req, res) => {
 app.post('/api/departments', jsonParser, async (req, res) => {
     console.log('/api/departments')
     const acysem = req.body.acysem
-    const language = req.body.language
+    if (acysem === null) {
+        res.status(400)
+        res.send({
+            acysem: 'Required.'
+        })
+    }
+    const language = req.body.language ?? 'zh-tw'
+    const force = req.body.force ?? false
     const requestKey = JSON.stringify({
         item: 'departments',
         acysem: acysem,
@@ -46,7 +53,7 @@ app.post('/api/departments', jsonParser, async (req, res) => {
     })
 
     redis.get(requestKey, async (error, response) => {
-        if (response === null) {
+        if (response === null || force) {
             res.status(449)
             res.send('Caching from NCYU server, please try again later.')
             const departments: Array<Department> = await queryAllDepartments(acysem, language)
@@ -64,10 +71,18 @@ app.post('/api/departments', jsonParser, async (req, res) => {
  * Query courses of a department
  */
 app.post('/api/departments/:department/:grade?', jsonParser, (req, res) => {
-    console.log('/api/courses')
-    const acysem = req.body.acysem
+    console.log('/api/departments/departmentId/grade?')
     const grade = req.params.grade ?? '**'
     const department = req.params.department
+    const acysem = req.body.acysem
+    if (acysem === null) {
+        res.status(400)
+        res.send({
+            acysem: 'Required.'
+        })
+        return
+    }
+    const force = req.body.force ?? false
     const requestKey = JSON.stringify({
         item: 'courses',
         acysem: acysem,
@@ -76,11 +91,93 @@ app.post('/api/departments/:department/:grade?', jsonParser, (req, res) => {
     })
 
     redis.get(requestKey, async (error, response) => {
-        if (response === null) {
-            const { data, error } = await queryDepartmentCourses(acysem, department, grade)
+        if (response === null || force) {
+            const { data, error } = await queryDepartment(acysem, department, grade)
             if (error === null) {
                 redis.set(requestKey, JSON.stringify(data), () => {
-                    redis.expire(requestKey, 60 * 60 * 24 * 30)
+                    redis.expire(requestKey, 60 * 60 * 24 * API_CACHE_TIMEOUT)
+                })
+                res.status(200)
+                res.send(data)
+            }
+            else {
+                res.status(400)
+                res.send(error)
+            }
+        }
+        else {
+            const courses = JSON.parse(response)
+            res.status(200)
+            res.send(courses)
+        }
+    })
+})
+
+app.post('/api/teachers/:teacher', jsonParser, (req, res) => {
+    console.log('/api/teachers/teacherName')
+    const teacher = req.params.teacher
+    const acysem = req.body.acysem
+    if (acysem === null) {
+        res.status(400)
+        res.send({
+            acysem: 'Required.'
+        })
+        return
+    }
+    const force = req.body.force ?? false
+    const requestKey = JSON.stringify({
+        item: 'teachers',
+        acysem: acysem,
+        teacher: teacher
+    })
+
+    redis.get(requestKey, async (error, response) => {
+        if (response === null || force) {
+            const { data, error } = await queryTeacher(acysem, teacher)
+            if (error === null) {
+                redis.set(requestKey, JSON.stringify(data), () => {
+                    redis.expire(requestKey, 60 * 60 * 24 * API_CACHE_TIMEOUT)
+                })
+                res.status(200)
+                res.send(data)
+            }
+            else {
+                res.status(400)
+                res.send(error)
+            }
+        }
+        else {
+            const courses = JSON.parse(response)
+            res.status(200)
+            res.send(courses)
+        }
+    })
+})
+
+app.post('/api/courses/:id', jsonParser, (req, res) => {
+    console.log('/api/courses/courseId')
+    const id = req.params.id
+    const acysem = req.body.acysem
+    if (acysem === null) {
+        res.status(400)
+        res.send({
+            acysem: 'Required.'
+        })
+        return
+    }
+    const force = req.body.force ?? false
+    const requestKey = JSON.stringify({
+        item: 'courses',
+        acysem: acysem,
+        id: id
+    })
+
+    redis.get(requestKey, async (error, response) => {
+        if (response === null || force) {
+            const { data, error } = await queryId(acysem, id)
+            if (error === null) {
+                redis.set(requestKey, JSON.stringify(data), () => {
+                    redis.expire(requestKey, 60 * 60 * 24 * API_CACHE_TIMEOUT)
                 })
                 res.status(200)
                 res.send(data)

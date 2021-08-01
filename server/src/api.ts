@@ -96,7 +96,7 @@ type ApiReponse = {
     }
 }
 
-async function queryDepartmentCourses(
+async function queryDepartment(
     acysem: string,
     department: string,
     grade: string
@@ -129,13 +129,49 @@ async function queryDepartmentCourses(
             }
         )
 
-        // api returned nothing, return as error
-        if (response.data instanceof Array) {
-            return {
-                data: null,
-                error: 'Bad query.'
-            }
+        return {
+            data: parseCourses(response.data),
+            error: null
         }
+    } catch (error) {
+        return {
+            data: null, 
+            error: error.response.data
+        }
+    }
+}
+
+async function queryTeacher(
+    acysem: string,
+    teacher: string
+): Promise<{ data: Array<Course> | null, error: any | null }> {
+    try {
+        const acy = acysem.substr(0, 3)
+        const sem = acysem.slice(-1)
+        const response = await axios.post(
+            API_ENDPOINT + 'get_cos_list', encode({
+                m_acy:        acy,
+                m_sem:        sem,
+                m_acyend:     acy,
+                m_semend:     sem,
+                m_dep_uid:    '**',
+                m_group:      '**',
+                m_grade:      '**',
+                m_class:      '**',
+                m_option:     'teaname',
+                m_crsname:    '**',
+                m_teaname:    teacher,
+                m_cos_id:     '**',
+                m_cos_code:   '**',
+                m_crstime:    '**',
+                m_crsoutline: '**',
+                m_costype:    '**'
+            }), {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                }
+            }
+        )
 
         return {
             data: parseCourses(response.data),
@@ -149,12 +185,55 @@ async function queryDepartmentCourses(
     }
 }
 
+async function queryId(
+    acysem: string,
+    id: string
+): Promise<{ data: Array<Course> | null, error: any | null }> {
+    try {
+        const acy = acysem.substr(0, 3)
+        const sem = acysem.slice(-1)
+        const response = await axios.post(
+            API_ENDPOINT + 'get_cos_list', encode({
+                m_acy:        acy,
+                m_sem:        sem,
+                m_acyend:     acy,
+                m_semend:     sem,
+                m_dep_uid:    '**',
+                m_group:      '**',
+                m_grade:      '**',
+                m_class:      '**',
+                m_option:     'cos_id',
+                m_crsname:    '**',
+                m_teaname:    '**',
+                m_cos_id:     id,
+                m_cos_code:   '**',
+                m_crstime:    '**',
+                m_crsoutline: '**',
+                m_costype:    '**'
+            }), {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                }
+            }
+        )
+
+        return {
+            data: parseCourses(response.data),
+            error: null
+        }
+    } catch (error) {
+        return {
+            data: null, 
+            error: error.response.data
+        }
+    }
+}
 
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function slowCachedPost(endpoint: string, params: string, config: Object): Promise<any> {
+async function slowPost(endpoint: string, params: string, config: Object): Promise<any> {
     try {
         console.log('request')
         const response = await axios.post(
@@ -182,7 +261,7 @@ async function queryAllDepartments(
     acysem: string,
     language: string,
 ): Promise<Array<Department>> {
-    const types = await slowCachedPost(
+    const types = await slowPost(
         'get_type', encode({
             flang: language,
             acysem: acysem,
@@ -205,7 +284,7 @@ async function getCategory(
     acysem: string, 
     language: string
 ): Promise<Array<Department>> {
-    const categories = await slowCachedPost(
+    const categories = await slowPost(
         'get_category', encode({
             ftype: typeId,
             flang: language,
@@ -244,7 +323,7 @@ async function getCollege(
     acysem: string, 
     language: string
 ): Promise<Array<Department>> {
-    const colleges = await slowCachedPost(
+    const colleges = await slowPost(
         'get_college', encode({
             ftype: typeId,
             fcategory: categoryId,
@@ -278,7 +357,7 @@ async function getDepartment(
     language: string
 ): Promise<Array<Department>> {
     try {
-        const apiDepartments = await slowCachedPost(
+        const apiDepartments = await slowPost(
             'get_dep', encode({
                 ftype: typeId,
                 fcategory: categoryId,
@@ -308,7 +387,7 @@ async function getDepartment(
 
 async function getGrades(typeId: string, categoryId: string, collegeId: string, departmentId: string, acysem: string, language: string): Promise<Array<{ name: { [key: string]: string }, value: string }>> {
     try {
-        const apiGrades = await slowCachedPost(
+        const apiGrades = await slowPost(
             'get_grade', encode({
                 ftype: typeId,
                 fcategory: categoryId,
@@ -338,4 +417,4 @@ async function getGrades(typeId: string, categoryId: string, collegeId: string, 
     return []
 } 
 
-export { queryDepartmentCourses, queryAllDepartments, ApiReponse }
+export { queryDepartment, queryTeacher, queryId, queryAllDepartments, ApiReponse }
