@@ -2,9 +2,7 @@ import axios from "axios"
 import { encode } from "querystring"
 import Department from "./departement"
 import Course, { parseCourses } from "./course"
-
-const API = 'https://timetable.nycu.edu.tw/?r=main/'
-const THROTTLE = 1200
+import { API_ENDPOINT, API_THROTTLE } from "./consts"
 
 type ApiReponse = {
     [key: string]: {
@@ -107,7 +105,7 @@ async function queryDepartmentCourses(
         const acy = acysem.substr(0, 3)
         const sem = acysem.slice(-1)
         const response = await axios.post(
-            API + 'get_cos_list', encode({
+            API_ENDPOINT + 'get_cos_list', encode({
                 m_acy:        acy,
                 m_sem:        sem,
                 m_acyend:     acy,
@@ -160,12 +158,12 @@ async function slowCachedPost(endpoint: string, params: string, config: Object):
     try {
         console.log('request')
         const response = await axios.post(
-            API + endpoint, 
+            API_ENDPOINT + endpoint, 
             params, 
             config
         )
         console.log('throttle')
-        await sleep(THROTTLE)
+        await sleep(API_THROTTLE)
         console.log(response.data)
         return response.data
     } catch (error) {}

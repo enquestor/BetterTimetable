@@ -3,14 +3,12 @@ import { json } from 'body-parser'
 import { queryDepartmentCourses, queryAllDepartments } from './api'
 import { createClient } from 'redis'
 import Department from './departement'
-
-const PORT = 8888
+import { REDIS_ENDPOINT, SERVER_PORT } from './consts'
 
 /**
  * Redis stuff
  */
-const REDIS = 'server.yagami.dev'
-const redis = createClient(6379, REDIS)
+const redis = createClient(6379, REDIS_ENDPOINT)
 
 const app = express()
 const jsonParser = json()
@@ -98,6 +96,6 @@ app.post('/api/departments/:department/:grade?', jsonParser, (req, res) => {
     })
 })
 
-app.listen(PORT, () => {
+app.listen(SERVER_PORT, () => {
     console.log('Server Running...')
 })
