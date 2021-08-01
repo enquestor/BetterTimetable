@@ -5,7 +5,7 @@
   "scripts": {
     "start": "cd server && npm run start",
     "dev": "(cd server && npm run dev);",
-    "clean": "rm package-lock.json; (cd server && npm run clean);",
+    "clean": "(cd server && npm run clean);",
     "postinstall": "(cd server && npm i);"
   },
   "author": "Allen Hu",
