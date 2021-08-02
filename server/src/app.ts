@@ -1,13 +1,15 @@
 import express from 'express'
 import { json } from 'body-parser'
-import { queryDepartment, queryOthers, queryAllDepartments } from './api'
 import { createClient } from 'redis'
+import { resolve } from 'path'
 import Department from './departement'
+import { queryDepartment, queryOthers, queryAllDepartments } from './api'
 import { REDIS_ENDPOINT, SERVER_PORT, API_CACHE_TIMEOUT } from './consts'
 
 /**
  * Redis stuff
  */
+console.log(REDIS_ENDPOINT)
 const redis = createClient(6379, REDIS_ENDPOINT)
 const now = (): string => (new Date()).toISOString()
 
@@ -278,6 +280,12 @@ app.post('/api/courses/permanent/:id', jsonParser, (req, res) => {
         res.status(status)
         res.send(data)
     })
+})
+
+app.use(express.static(resolve(__dirname + "/../../client/public")))
+app.get('*', (req, res) => {
+    const path = resolve(__dirname + "/../../client/public/index.html")
+    res.sendFile(path)
 })
 
 app.listen(SERVER_PORT, () => {

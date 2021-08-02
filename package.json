@@ -1,14 +1,18 @@
 {
   "name": "timetable",
   "version": "1.0.0",
-  "description": "Faster NYCU Timetable",
+  "description": "Better NYCU Timetable",
   "scripts": {
-    "start": "cd server && npm run start",
-    "dev": "docker-compose up -d redis && (cd server && npm run dev);",
-    "docker": "docker-compose up -d --build node-server redis",
-    "clean": "(cd server && npm run clean);",
-    "postinstall": "(cd server && npm i);"
+    "start":       "concurrently \"cd server && npm run start\" \"cd client && npm run start\"",
+    "dev":         "concurrently \"cd server && npm run dev  \" \"cd client && npm run dev  \" \"docker-compose up redis\"",
+    "prod":        "concurrently \"cd server && npm run prod \" \"cd client && npm run prod \"",
+    "clean":       "concurrently \"cd server && npm run clean\" \"cd client && npm run clean\" \"rm -rf node_modules\"",
+    "postinstall": "concurrently \"cd server && npm i        \" \"cd client && npm i        \"",
+    "docker":      "docker-compose up --build node redis"
   },
   "author": "Allen Hu",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^6.2.0"
+  }
 }

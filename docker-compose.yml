@@ -1,11 +1,11 @@
 version: '3'
 services:
-  node-server:
-    container_name: node-server
+  node:
+    container_name: node
     build:
-      context: ./server
+      context: .
       dockerfile: Dockerfile
-    image: timetable/node-server
+    image: timetable/node
     restart: unless-stopped
     tty: true
     ports:

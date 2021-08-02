@@ -1,8 +1,9 @@
 {
   "scripts": {
-    "start": "npm run build && node dist/app.js",
+    "start": "node dist/app.js",
     "build": "npx tsc",
     "dev": "nodemon src/app.ts",
+    "prod": "npm run build && npm run start",
     "clean": "rm -rf dist && rm -rf node_modules"
   },
   "devDependencies": {

@@ -12,4 +12,4 @@ RUN npm i
 # Expose port
 EXPOSE 8888
 
-CMD [ "npm", "run", "start" ]
+CMD [ "npm", "run", "prod" ]
