@@ -133,7 +133,7 @@ async function queryDepartment(
             data: parseCourses(response.data),
             error: null
         }
-    } catch (error) {
+    } catch (error: any) {
         return {
             data: null, 
             error: error.response.data
@@ -178,7 +178,7 @@ async function queryOthers(
             data: parseCourses(response.data),
             error: null
         }
-    } catch (error) {
+    } catch (error: any) {
         return {
             data: null, 
             error: error.response.data

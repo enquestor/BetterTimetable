@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "Better NYCU Timetable",
   "scripts": {
-    "start":       "concurrently \"cd server && npm run start\" \"cd client && npm run start\"",
-    "dev":         "concurrently \"cd server && npm run dev  \" \"cd client && npm run dev  \" \"docker-compose up redis\"",
-    "prod":        "concurrently \"cd server && npm run prod \" \"cd client && npm run prod \"",
-    "clean":       "concurrently \"cd server && npm run clean\" \"cd client && npm run clean\" \"rm -rf node_modules\"",
-    "postinstall": "concurrently \"cd server && npm i        \" \"cd client && npm i        \"",
-    "docker":      "docker-compose up --build node redis"
+    "start": "concurrently \"cd server && npm run start\"",
+    "dev": "concurrently \"cd server && npm run dev  \" \"docker-compose up redis\"",
+    "prod": "concurrently \"cd server && npm run prod \"",
+    "clean": "concurrently \"cd server && npm run clean\" \"rm -rf node_modules\"",
+    "postinstall": "concurrently \"cd server && npm i        \"",
+    "docker": "docker-compose up --build node redis"
   },
   "author": "Allen Hu",
   "license": "MIT",

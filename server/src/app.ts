@@ -5,6 +5,8 @@ import { resolve } from 'path'
 import Department from './departement'
 import { queryDepartment, queryOthers, queryAllDepartments } from './api'
 import { REDIS_ENDPOINT, SERVER_PORT, API_CACHE_TIMEOUT } from './consts'
+import Course from './course'
+var cors = require('cors')
 
 /**
  * Redis stuff
@@ -12,11 +14,13 @@ import { REDIS_ENDPOINT, SERVER_PORT, API_CACHE_TIMEOUT } from './consts'
 console.log(REDIS_ENDPOINT)
 const redis = createClient(6379, REDIS_ENDPOINT)
 const now = (): string => (new Date()).toISOString()
+const safe = (e: any) => !(typeof(e) === 'undefined' || e === null || e === '')
 
 /**
  * Express stuff
  */
 const app = express()
+app.use(cors({origin: '*'}))
 const jsonParser = json()
 
 /**
@@ -60,6 +64,7 @@ app.post('/api/departments', jsonParser, async (req, res) => {
         acysem: acysem,
         language: language
     })
+    console.log(requestKey)
 
     redis.get(requestKey, async (_, response) => {
         if (response === null || force) {
@@ -72,6 +77,76 @@ app.post('/api/departments', jsonParser, async (req, res) => {
             }))
         }
         else {
+            res.status(200)
+            res.send(JSON.parse(response))
+        }
+    })
+})
+
+app.post('/api/query', jsonParser, (req, res) => {
+    const acysem = req.body.acysem
+    const type = req.body.type
+    const query = req.body.query
+    const force = req.body.force ?? false
+    if (!safe(acysem) || !safe(type) || !safe(query)) {
+        res.status(400)
+        res.send({
+            acysem: acysem ? null : 'Required.',
+            type:   type   ? null : 'Required.',
+            query:  query  ? null : 'Required.'
+        })
+        return
+    }
+    const requestKey = JSON.stringify({
+        acysem: acysem,
+        type: type,
+        query: query
+    })
+
+    redis.get(requestKey, async (error, response) => {
+        if (response === null || force) {
+            // get real-time data
+            let result: { data: Array<Course> | null, error: any | null }
+            if (type === 'department') {
+                result = await queryDepartment(acysem, query, '**')
+            }
+            else if (type === 'teacher') {
+                result = await queryOthers(acysem, 'teaname', query)
+            }
+            else if (type === 'id') {
+                result = await queryOthers(acysem, 'cos_id', query)
+            }
+            else if (type === 'pid') {
+                result = await queryOthers(acysem, 'cos_code', query)
+            }
+            else if (type === 'name') {
+                result = await queryOthers(acysem, 'crsname', query)
+            }
+            else {
+                res.status(400)
+                res.send('No such query type.')
+                return
+            }
+
+            const { data, error } = result
+            if (error === null) {
+                const result = {
+                    data: data,
+                    time: now()
+                }
+                redis.set(requestKey, JSON.stringify(result), () => {
+                    redis.expire(requestKey, 60 * 60 * 24 * API_CACHE_TIMEOUT)
+                })
+                res.status(200)
+                res.send(result)
+            }
+            else {
+                res.status(400)
+                res.send(error)
+            }
+        }
+        else {
+            // return cached data
             res.status(200)
             res.send(JSON.parse(response))
         }
@@ -282,11 +357,11 @@ app.post('/api/courses/permanent/:id', jsonParser, (req, res) => {
     })
 })
 
-app.use(express.static(resolve(__dirname + "/../../client/public")))
-app.get('*', (req, res) => {
-    const path = resolve(__dirname + "/../../client/public/index.html")
-    res.sendFile(path)
-})
+// app.use(express.static(resolve(__dirname + "/../../client/public")))
+// app.get('*', (req, res) => {
+//     const path = resolve(__dirname + "/../../client/public/index.html")
+//     res.sendFile(path)
+// })
 
 app.listen(SERVER_PORT, () => {
     console.log('Server Running...')
