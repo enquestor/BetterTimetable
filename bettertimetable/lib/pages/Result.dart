@@ -43,23 +43,12 @@ class _ResultState extends State<Result> {
             return Center(child: Text('No data, redirecting...'));
           } else {
             print(courses);
-            return SingleChildScrollView(
-              child: Center(
-                child: Container(
-                  padding: EdgeInsets.all(12.0),
-                  constraints: BoxConstraints(maxWidth: 800),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: courses.length,
-                    itemBuilder: (context, index) => CourseCard(
-                      course: courses[index],
-                    ),
-                    separatorBuilder: (context, index) =>
-                        SizedBox(height: 12.0),
-                  ),
-                ),
+            return ListView.separated(
+              itemCount: courses.length,
+              itemBuilder: (context, index) => CourseCard(
+                course: courses[index],
               ),
+              separatorBuilder: (context, index) => SizedBox(height: 12.0),
             );
           }
         } else {
@@ -77,85 +66,97 @@ class CourseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userController = Get.put(UserController());
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        // constraints: BoxConstraints(maxWidth: 800),
+        width: 800,
+        // color: Colors.green,
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Obx(
-                  () => Text(
-                    course['name'][userController.language],
-                    style: Theme.of(context)
-                        .textTheme
-                        .headline5!
-                        .copyWith(fontWeight: FontWeight.bold),
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Obx(
+                      () => Text(
+                        course['name'][userController.language],
+                        style: Theme.of(context)
+                            .textTheme
+                            .headline5!
+                            .copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(width: 12.0),
+                    Expanded(
+                      child: Text(
+                        course['teacher'],
+                        style: Theme.of(context)
+                            .textTheme
+                            .headline6!
+                            .copyWith(fontSize: 18.0),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    SizedBox(width: 12.0),
+                    TypeIndicator(type: course['type']),
+                  ],
                 ),
-                SizedBox(width: 12.0),
-                Expanded(
-                  child: Text(
-                    course['teacher'],
-                    style: Theme.of(context)
-                        .textTheme
-                        .headline6!
-                        .copyWith(fontSize: 18.0),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                SizedBox(height: 12.0),
+                Text(
+                  course['time'],
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption!
+                      .copyWith(fontSize: 16.0),
                 ),
-                SizedBox(width: 12.0),
-                TypeIndicator(type: course['type']),
-              ],
-            ),
-            SizedBox(height: 12.0),
-            Text(
-              course['time'],
-              style:
-                  Theme.of(context).textTheme.caption!.copyWith(fontSize: 16.0),
-            ),
-            Visibility(
-              visible: course['memo'] != '',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 24.0),
-                  Text(course['memo'],
-                      style: Theme.of(context).textTheme.subtitle1),
-                ],
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {},
-                  child: Text('詳細資訊'),
-                ),
-                Spacer(),
                 Visibility(
-                  visible: (course['teacherLink'] as String).isNotEmpty,
-                  child: IconButton(
-                    onPressed: () => launch(course['teacherLink']),
-                    icon: Icon(Icons.account_circle_outlined),
-                    splashRadius: 20.0,
-                    color: Theme.of(context).colorScheme.primary,
+                  visible: course['memo'] != '',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 24.0),
+                      Text(course['memo'],
+                          style: Theme.of(context).textTheme.subtitle1),
+                    ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () => launch(
-                      'https://timetable.nycu.edu.tw/?r=main/crsoutline&Acy=${userController.acy}&Sem=${userController.sem}&CrsNo=${course['id']}&lang=${userController.language}'),
-                  icon: Icon(Icons.info_outline),
-                  splashRadius: 20.0,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                SizedBox(height: 8.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => showDialog(
+                          context: context,
+                          builder: (context) => DetailDialog(course: course)),
+                      child: Text('詳細資訊'),
+                    ),
+                    Spacer(),
+                    Visibility(
+                      visible: (course['teacherLink'] as String).isNotEmpty,
+                      child: IconButton(
+                        onPressed: () => launch(course['teacherLink']),
+                        icon: Icon(Icons.account_circle_outlined),
+                        splashRadius: 20.0,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => launch(
+                          'https://timetable.nycu.edu.tw/?r=main/crsoutline&Acy=${userController.acy}&Sem=${userController.sem}&CrsNo=${course['id']}&lang=${userController.language}'),
+                      icon: Icon(Icons.info_outline),
+                      splashRadius: 20.0,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ],
+                )
               ],
-            )
-          ],
+            ),
+          ),
         ),
       ),
     );
@@ -183,6 +184,32 @@ class TypeIndicator extends StatelessWidget {
               ),
         ),
       ),
+    );
+  }
+}
+
+class DetailDialog extends StatelessWidget {
+  final Map<String, dynamic> course;
+  const DetailDialog({Key? key, required this.course}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('詳細資訊'),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: <Widget>[
+            Text('課號: ${course['id']}'),
+            Text('永久課號: ${course['permanentId']}'),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          child: const Text('關閉'),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
     );
   }
 }

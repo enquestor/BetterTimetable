@@ -357,11 +357,11 @@ app.post('/api/courses/permanent/:id', jsonParser, (req, res) => {
     })
 })
 
-// app.use(express.static(resolve(__dirname + "/../../client/public")))
-// app.get('*', (req, res) => {
-//     const path = resolve(__dirname + "/../../client/public/index.html")
-//     res.sendFile(path)
-// })
+app.use(express.static(resolve("/client")))
+app.get('*', (req, res) => {
+    const path = resolve("/client/index.html")
+    res.sendFile(path)
+})
 
 app.listen(SERVER_PORT, () => {
     console.log('Server Running...')

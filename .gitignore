@@ -2,3 +2,4 @@
 redis/data/
 node_modules/
 dist/
+*.zip
