@@ -102,6 +102,7 @@ app.post('/api/query', jsonParser, (req, res) => {
         type: type,
         query: query
     })
+    console.log(requestKey);
 
     redis.get(requestKey, async (error, response) => {
         if (response === null || force) {

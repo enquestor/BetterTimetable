@@ -1,4 +1,6 @@
 import 'package:bettertimetable/NotFound.dart';
+import 'package:bettertimetable/Splash.dart';
+import 'package:bettertimetable/controllers/CacheController.dart';
 import 'package:bettertimetable/pages/Result.dart';
 import 'package:bettertimetable/pages/Search.dart';
 import 'package:flutter/material.dart';
@@ -13,9 +15,12 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    var cacheController = Get.put(CacheController());
+    cacheController.init();
     return GetMaterialApp(
         title: Consts.appName,
         theme: ThemeData(
+          fontFamily: 'NotoSansCJKtc',
           primarySwatch: Colors.teal,
           appBarTheme: AppBarTheme(backgroundColor: Colors.white),
           scaffoldBackgroundColor: Colors.white,
@@ -29,6 +34,7 @@ class MyApp extends StatelessWidget {
         ),
         darkTheme: ThemeData(
           brightness: Brightness.dark,
+          fontFamily: 'NotoSansCJKtc',
           primarySwatch: Colors.teal,
           appBarTheme: AppBarTheme(backgroundColor: Color(0xff303030)),
           cardTheme: CardTheme(
@@ -40,6 +46,10 @@ class MyApp extends StatelessWidget {
           ),
         ),
         themeMode: ThemeMode.system,
+        builder: (context, child) => Obx(() => AnimatedSwitcher(
+              duration: Duration(milliseconds: 1000),
+              child: cacheController.loaded ? child! : Splash(),
+            )),
         initialRoute: '/',
         unknownRoute: GetPage(name: '/404', page: () => NotFound()),
         getPages: [

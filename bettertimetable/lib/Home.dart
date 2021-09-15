@@ -68,60 +68,18 @@ class _HomeState extends State<Home> {
                     .toList(),
               ),
             ),
-            // Visibility(
-            //   visible: context.vRouter.url != '/',
-            //   child: Flexible(
-            //     child: Row(
-            //       mainAxisAlignment: MainAxisAlignment.start,
-            //       mainAxisSize: MainAxisSize.max,
-            //       crossAxisAlignment: CrossAxisAlignment.center,
-            //       children: [
-            //         SizedBox(width: 32),
-            //         Flexible(
-            //           child: TextField(
-            //             decoration: InputDecoration(
-            //               enabledBorder: UnderlineInputBorder(
-            //                 borderSide: BorderSide(color: Colors.grey.shade400),
-            //               ),
-            //               focusedBorder: UnderlineInputBorder(
-            //                 borderSide: BorderSide(color: Colors.white),
-            //               ),
-            //               hintText: '搜尋 ...',
-            //               hintStyle: TextStyle(color: Colors.grey.shade200),
-            //               focusColor: Theme.of(context).cardColor,
-            //             ),
-            //             cursorColor: Colors.grey.shade200,
-            //             style: TextStyle(color: Theme.of(context).cardColor),
-            //           ),
-            //         ),
-            //         IconButton(
-            //           onPressed: () => {},
-            //           icon: Icon(Icons.search),
-            //           splashRadius: 20,
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
-            // SizedBox(width: 140),
           ],
         ),
         actions: [
-          Visibility(
-            visible: Get.currentRoute != '/',
-            child: IconButton(
-              onPressed: () => Get.toNamed('/'),
-              icon: Icon(Icons.search),
-              splashRadius: 20,
-              color: Theme.of(context).textTheme.subtitle1!.color,
-            ),
-          ),
-          IconButton(
-            onPressed: () => Get.toNamed('/'),
-            icon: Icon(Icons.info),
-            splashRadius: 20,
-            color: Theme.of(context).textTheme.subtitle1!.color,
-          ),
+          HomeButton(
+              text: '使用說明',
+              onPressed: () => ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text('快...快做出來了...再等一下罷拖')))),
+          HomeButton(
+            text: '關於',
+            onPressed: () => ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text('快...快做出來了...再等一下罷拖'))),
+          )
         ],
         centerTitle: false,
       ),
@@ -129,11 +87,33 @@ class _HomeState extends State<Home> {
       floatingActionButton: Visibility(
         visible: Get.currentRoute == '/result',
         child: FloatingActionButton(
+          tooltip: '強制重新整理',
           onPressed: () => Get.offAndToNamed('/result', arguments: {
             ...(Get.arguments as Map<String, dynamic>),
             'force': true
           }),
           child: Icon(Icons.refresh),
+        ),
+      ),
+    );
+  }
+}
+
+class HomeButton extends StatelessWidget {
+  final String text;
+  final Function onPressed;
+  const HomeButton({Key? key, required this.text, required this.onPressed})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: () => onPressed(),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.button,
         ),
       ),
     );

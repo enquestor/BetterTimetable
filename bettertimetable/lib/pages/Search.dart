@@ -1,6 +1,5 @@
-import 'package:bettertimetable/api.dart';
 import 'package:bettertimetable/consts.dart';
-import 'package:bettertimetable/controllers/UserController.dart';
+import 'package:bettertimetable/controllers/CacheController.dart';
 import 'package:bettertimetable/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,16 +18,17 @@ class _SearchState extends State<Search> {
   String searchTarget = Consts.availableSearchTargets.first['value']!;
   String searchTerm = '';
   int selectedId = 0;
-  dynamic departments;
   List<String> recommendations = [];
 
   void handleSearchTermChange(String newSearchTerm) {
+    var cacheController = Get.put(CacheController());
+
     setState(() => searchTerm = newSearchTerm);
     if (searchTarget != 'department') {
       return;
     }
-    var departmentNames = List<String>.from(
-        departments['data'].map((department) => department['name']));
+    var departmentNames = List<String>.from(cacheController.departments['data']
+        .map((department) => department['name']));
     var matches = matchStrings(departmentNames, newSearchTerm);
     matches.removeWhere((e) => (e['score'] as double) == 0);
     setState(() {
@@ -52,12 +52,12 @@ class _SearchState extends State<Search> {
     });
   }
 
-  void handleSubmission() {
+  void handleSubmission(int index) {
+    var cacheController = Get.put(CacheController());
     String queryString;
     if (searchTarget == 'department') {
-      queryString = (departments['data'] as List<dynamic>)
-          .where(
-              (department) => department['name'] == recommendations[selectedId])
+      queryString = (cacheController.departments['data'] as List<dynamic>)
+          .where((department) => department['name'] == recommendations[index])
           .first['id'];
     } else {
       queryString = searchTerm;
@@ -71,26 +71,18 @@ class _SearchState extends State<Search> {
   }
 
   @override
-  void initState() {
-    final userController = Get.put(UserController());
-    getDepartments(acysem: userController.acysem).then((result) {
-      setState(() => departments = result);
-    });
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          SizedBox(height: 120.0),
           Text('NYCU Timetable',
               style: Theme.of(context)
                   .textTheme
                   .headline2
                   ?.copyWith(color: Theme.of(context).textTheme.button?.color)),
-          SizedBox(height: 24),
+          SizedBox(height: 40),
           Container(
             constraints: BoxConstraints(maxWidth: 800),
             child: Row(
@@ -119,9 +111,10 @@ class _SearchState extends State<Search> {
                       autofocus: true,
                       focusNode: _focus,
                       onChanged: (newValue) => handleSearchTermChange(newValue),
-                      onSubmitted: (_) => handleSubmission(),
+                      onSubmitted: (_) => handleSubmission(selectedId),
                       decoration: InputDecoration(
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16.0)),
                         prefixIcon: Icon(Icons.search),
                       ),
                     ),
@@ -136,7 +129,10 @@ class _SearchState extends State<Search> {
                         setState(() => searchTarget = newValue!),
                     value: searchTarget,
                     style: Theme.of(context).textTheme.bodyText1,
-                    decoration: InputDecoration(border: OutlineInputBorder()),
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0)),
+                    ),
                     icon: Icon(Icons.expand_more),
                     items: Consts.availableSearchTargets
                         .map(
@@ -159,7 +155,7 @@ class _SearchState extends State<Search> {
               secondChild: Recommendations(
                   recommendations: recommendations,
                   selectedId: selectedId,
-                  onTap: () => handleSubmission()),
+                  onTap: handleSubmission),
               crossFadeState:
                   recommendations.isEmpty || searchTarget != 'department'
                       ? CrossFadeState.showFirst
@@ -178,12 +174,13 @@ class Recents extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var cacheController = Get.put(CacheController());
     return Padding(
       padding: const EdgeInsets.fromLTRB(42, 12, 24, 0),
       child: ListView.separated(
         controller: ScrollController(),
         shrinkWrap: true,
-        itemCount: 5,
+        itemCount: cacheController.recents.length,
         itemBuilder: (context, index) => RecentItem(),
         separatorBuilder: (context, index) => Padding(
           padding: const EdgeInsets.only(right: 40.0),
@@ -250,7 +247,7 @@ class Recommendations extends StatelessWidget {
         itemCount: recommendations.length,
         itemBuilder: (context, index) => ListTile(
           selected: index == selectedId,
-          onTap: () => onTap(),
+          onTap: () => onTap(index),
           title: Text(recommendations[index]),
         ),
       ),

@@ -43,12 +43,12 @@ class _ResultState extends State<Result> {
             return Center(child: Text('No data, redirecting...'));
           } else {
             print(courses);
-            return ListView.separated(
+            return ListView.builder(
               itemCount: courses.length,
-              itemBuilder: (context, index) => CourseCard(
-                course: courses[index],
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: CourseCard(course: courses[index]),
               ),
-              separatorBuilder: (context, index) => SizedBox(height: 12.0),
             );
           }
         } else {
@@ -107,7 +107,7 @@ class CourseCard extends StatelessWidget {
                 ),
                 SizedBox(height: 12.0),
                 Text(
-                  course['time'],
+                  '${course['time']} · ${course['credits']} 學分',
                   style: Theme.of(context)
                       .textTheme
                       .caption!
@@ -138,19 +138,25 @@ class CourseCard extends StatelessWidget {
                     Spacer(),
                     Visibility(
                       visible: (course['teacherLink'] as String).isNotEmpty,
+                      child: Tooltip(
+                        message: '教師資訊',
+                        child: IconButton(
+                          onPressed: () => launch(course['teacherLink']),
+                          icon: Icon(Icons.account_circle_outlined),
+                          splashRadius: 20.0,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                    Tooltip(
+                      message: '課程綱要',
                       child: IconButton(
-                        onPressed: () => launch(course['teacherLink']),
-                        icon: Icon(Icons.account_circle_outlined),
+                        onPressed: () => launch(
+                            'https://timetable.nycu.edu.tw/?r=main/crsoutline&Acy=${userController.acy}&Sem=${userController.sem}&CrsNo=${course['id']}&lang=${userController.language}'),
+                        icon: Icon(Icons.info_outline),
                         splashRadius: 20.0,
                         color: Theme.of(context).colorScheme.primary,
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () => launch(
-                          'https://timetable.nycu.edu.tw/?r=main/crsoutline&Acy=${userController.acy}&Sem=${userController.sem}&CrsNo=${course['id']}&lang=${userController.language}'),
-                      icon: Icon(Icons.info_outline),
-                      splashRadius: 20.0,
-                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ],
                 )
@@ -169,10 +175,19 @@ class TypeIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).textTheme.bodyText1!.color;
+    Color color;
+    if (type == '必修') {
+      color = Colors.blue[300]!;
+    } else if (type == '選修') {
+      color = Colors.pink[200]!;
+    } else if (type == '通識') {
+      color = Colors.purple[300]!;
+    } else {
+      color = Theme.of(context).textTheme.bodyText1!.color!;
+    }
     return Container(
       decoration: BoxDecoration(
-          border: Border.all(width: 2.0, color: color!),
+          border: Border.all(width: 2.0, color: color),
           borderRadius: BorderRadius.all(Radius.circular(4.0))),
       child: Padding(
         padding: const EdgeInsets.all(2.0),
@@ -194,8 +209,9 @@ class DetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var userController = Get.put(UserController());
     return AlertDialog(
-      title: const Text('詳細資訊'),
+      title: Text(course['name'][userController.language]),
       content: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
@@ -206,7 +222,7 @@ class DetailDialog extends StatelessWidget {
       ),
       actions: <Widget>[
         TextButton(
-          child: const Text('關閉'),
+          child: Text('關閉'),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ],

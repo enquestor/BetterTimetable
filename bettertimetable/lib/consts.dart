@@ -19,4 +19,6 @@ class Consts {
   static const int recommendationCount = 5;
 
   static const String apiEndpoint = 'http://localhost:8888/api/';
+
+  static const double borderRadius = 16.0;
 }
